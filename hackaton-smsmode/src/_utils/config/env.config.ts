@@ -5,7 +5,7 @@ import { Logger } from '@nestjs/common';
 
 export class EnvironmentVariables {
   @IsNumber()
-  APP_PORT: number;
+  PORT: number = 3000;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

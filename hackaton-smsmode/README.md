@@ -31,6 +31,8 @@
 $ npm install
 ```
 
+Create a `.env` file from `.env.example` and set `MONGODB_URI` before running the app.
+
 ## Compile and run the project
 
 ```bash

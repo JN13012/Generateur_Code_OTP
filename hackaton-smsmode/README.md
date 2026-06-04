@@ -74,14 +74,7 @@ With Mau, you can deploy your application in just a few clicks, allowing you to 
 
 ---
 
-## Sécurité
-
-### Défense en profondeur (Defense in Depth)
-
-Toutes les données provenant du client sont considérées comme non fiables.
-
-Les contrôles de sécurité critiques sont systématiquement réalisés côté serveur afin d'empêcher tout contournement via le navigateur, Postman, curl ou un proxy HTTP.
-
+## Architecture Sécurisée
 
 ### Menaces prises en compte
 

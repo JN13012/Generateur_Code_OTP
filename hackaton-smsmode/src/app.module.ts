@@ -3,14 +3,17 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { OtpModule } from './db/otp/otp.module';
 import { UserModule } from './db/user/user.module';
+import { validateEnv } from './_utils/config/env.config';
+import { OtpModule } from './otp/otp.module';
+import { OtpController } from './otp/otp.controller';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env', '../.env'],
+      validate: validateEnv,
     }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
@@ -21,7 +24,7 @@ import { UserModule } from './db/user/user.module';
     OtpModule,
     UserModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, OtpController],
   providers: [AppService],
 })
 export class AppModule {}

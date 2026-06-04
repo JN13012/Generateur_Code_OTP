@@ -3,7 +3,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from './db/user/user.module';
 import { validateEnv } from './_utils/config/env.config';
 import { OtpModule } from './db/otp/otp.module';
 
@@ -21,7 +20,6 @@ import { OtpModule } from './db/otp/otp.module';
       }),
     }),
     OtpModule,
-    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

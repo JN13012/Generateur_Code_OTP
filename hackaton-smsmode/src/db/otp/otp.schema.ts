@@ -17,6 +17,9 @@ export class Otp {
   codeHash!: string;
 
   @Prop({ required: true })
+  phone!: string;
+
+  @Prop({ required: true })
   expiresAt!: Date;
 
   @Prop({ default: 0 })

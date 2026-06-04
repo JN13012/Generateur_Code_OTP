@@ -11,7 +11,7 @@ export enum OtpStatus {
   Failed = 'failed',
 }
 
-@Schema({ timestamps: true, collection: 'otps' })
+@Schema({ timestamps: true, collection: 'otp' })
 export class Otp {
   @Prop({ required: true })
   codeHash!: string;

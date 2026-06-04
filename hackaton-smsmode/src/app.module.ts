@@ -5,8 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './db/user/user.module';
 import { validateEnv } from './_utils/config/env.config';
-import { OtpModule } from './otp/otp.module';
-import { OtpController } from './otp/otp.controller';
+import { OtpModule } from './db/otp/otp.module';
 
 @Module({
   imports: [
@@ -24,7 +23,7 @@ import { OtpController } from './otp/otp.controller';
     OtpModule,
     UserModule,
   ],
-  controllers: [AppController, OtpController],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}

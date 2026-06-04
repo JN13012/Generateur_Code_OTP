@@ -31,7 +31,15 @@
 $ npm install
 ```
 
-Create a `.env` file from `.env.example` and set `MONGODB_URI` before running the app.
+Create a `.env` file from `.env.example` and set `PORT`, `MONGODB_URI`, `NGROK_AUTHTOKEN`, `NGROK_TARGET_HOST` and `NGROK_TARGET_PORT` before running the app.
+
+If your ngrok credential does not allow random TCP bindings, also set `NGROK_REMOTE_ADDR` to a reserved TCP address from your ngrok dashboard.
+
+If you want ngrok to expose an already existing database, set `NGROK_TARGET_HOST` and `NGROK_TARGET_PORT` to the machine and port where that database already listens. The `ngrok` service will create a TCP tunnel and print the public address in its logs.
+
+```bash
+docker compose up
+```
 
 ## Compile and run the project
 

@@ -9,6 +9,22 @@ services:
       - /app/node_modules
     env_file:
       - .env
+    networks:
+      - app_network
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: smsmode_back-ngrok
+    command: >
+      sh -c 'if [ -n "$$NGROK_REMOTE_ADDR" ]; then
+        exec ngrok tcp "$$NGROK_TARGET_HOST:$$NGROK_TARGET_PORT" --remote-addr="$$NGROK_REMOTE_ADDR" --log=stdout;
+      else
+        exec ngrok tcp "$$NGROK_TARGET_HOST:$$NGROK_TARGET_PORT" --log=stdout;
+      fi'
+    env_file:
+      - .env
+    networks:
+      - app_network
 
 networks:
   app_network:

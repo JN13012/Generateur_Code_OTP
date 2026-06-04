@@ -1,31 +1,110 @@
+require('dotenv').config();
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { config } from 'dotenv';
 const mongoose = require('mongoose');
 
-require('dotenv').config();
+export class Populate {
+    public constructor() {
+        this.mongoUri = process.env.MONGODB_URI
+        if (!this.mongoUri) {
+            console.error('MONGODB_URI not found in environment. Please add it to your .env file.');
+            process.exit(1);
+        }
 
-const dbURI = process.env.MONGODB_URI;
+        this.connectPromise = mongoose.connect(this.mongoUri)
+            .then(() => console.log('Connected to MongoDB'))
+            .catch((error) => {
+                console.error('Error connecting to MongoDB:', error.message);
+                throw error;
+            });
+    }
 
-if (!dbURI) {
-    console.error('MONGODB_URI not found in environment. Please add it to your .env file.');
-    process.exit(1);
+    public async create(collection: string, doc: any): Promise<any> {
+        await this.ensureConnected();
+        if (!this.db || !this.db.db) {
+            throw new Error('MongoDB not connected');
+        }
+        try {
+            const result = await this.db.db.collection(collection).insertOne(doc);
+            console.log("Create Made")
+            return result;
+        } catch (err) {
+            console.error('Create error:', err);
+            throw err;
+        }
+    }
+
+    public async read(collection: string, doc: any): Promise<any>  {
+        await this.ensureConnected();
+        if (!this.db || !this.db.db) {
+            throw new Error('MongoDB not connected');
+        }
+        try {
+            const result = await this.db.db.collection(collection).findOne(doc);
+            console.log("Read Made")
+            return result;
+        } catch (err) {
+            console.error('Read error:', err);
+            throw err;
+        }
+    }
+
+    public async update(collection: string, doc: any, tochange): Promise<any> {
+        await this.ensureConnected();
+        if (!this.db || !this.db.db) {
+            throw new Error('MongoDB not connected');
+        }
+        try {
+            const updateDocument = this.hasAtomicOperator(tochange) ? tochange : { $set: tochange };
+            const result = await this.db.db.collection(collection).updateOne(doc, updateDocument);
+            console.log("Update Made")
+            return result;
+        } catch (err) {
+            console.error('Update error:', err);
+            throw err;
+        }
+    }
+
+    public async delete(collection: string, doc: any): Promise<any> {
+        await this.ensureConnected();
+        if (!this.db || !this.db.db) {
+            throw new Error('MongoDB not connected');
+        }
+        try {
+            const result = await this.db.db.collection(collection).deleteOne(doc);
+            console.log("Delete Made")
+            return result;
+        } catch (err) {
+            console.error('Delete error:', err);
+            throw err;
+        }
+    }
+
+    private mongoUri;
+    private db = mongoose.connection;
+    private connectPromise: Promise<any> | null = null;
+
+    private async ensureConnected(): Promise<void> {
+        if (!this.connectPromise) {
+            this.connectPromise = mongoose.connect(this.mongoUri)
+                .then(() => console.log('Connected to MongoDB'))
+                .catch((error) => {
+                    console.error('Error connecting to MongoDB:', error.message);
+                    throw error;
+                });
+        }
+        await this.connectPromise;
+        this.db = mongoose.connection;
+    }
+
+    private hasAtomicOperator(updateDocument: any): boolean {
+        if (!updateDocument || typeof updateDocument !== 'object') {
+            return false;
+        }
+
+        return Object.keys(updateDocument).some((key) => key.startsWith('$'));
+    }
 }
 
-mongoose.connect(dbURI)
-    .then(() => console.log('Connected to MongoDB'))
-    .catch((error) => {
-        console.error('Error connecting to MongoDB:', error.message);
-    });
-
-const db = mongoose.connection;
-
-export async function Populate() {
-    // Connection successful
-    db.once('open', () => console.log('Connected to MongoDB'));
-
-    // Connection error
-    db.on('error', (err) => console.error('MongoDB connection error:', err));
-
-    // Connection disconnected
-    db.on('disconnected', () => console.log('Disconnected from MongoDB'));
-}
+export default Populate;

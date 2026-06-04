@@ -14,22 +14,16 @@ export enum OtpStatus {
 @Schema({ timestamps: true, collection: 'otps' })
 export class Otp {
   @Prop({ required: true })
-  codeHash: string;
+  codeHash!: string;
 
   @Prop({ required: true })
-  expiresAt: Date;
+  expiresAt!: Date;
 
   @Prop({ default: 0 })
-  attempts: number;
+  attempts!: number;
 
-  @Prop({ default: 5 })
-  maxAttempts: number;
-
-  @Prop({ type: Date, default: null })
-  isUsed: boolean | false;
+  @Prop({ default: false })
+  isUsed!: boolean;
 }
 
 export const OtpSchema = SchemaFactory.createForClass(Otp);
-
-OtpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-OtpSchema.index({ phone: 1, nonce: 1 }, { unique: true });

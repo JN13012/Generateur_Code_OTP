@@ -1,7 +1,5 @@
-// <<<<<<< Updated upstream
 // import 'dotenv/config';
 // import mongoose from 'mongoose';
-// =======
 // import { Module } from '@nestjs/common';
 // import { MongooseModule } from '@nestjs/mongoose';
 // import { config } from 'dotenv';
@@ -11,7 +9,6 @@
 //   OTP = 'otp',
 //   USER = 'users',
 // }
-// >>>>>>> Stashed changes
 
 // export class Populate {
 //   public constructor() {
@@ -55,10 +52,7 @@
 //     try {
 //       const result = await this.db.db.collection(collection).findOne(doc);
 //       console.log('Read Made');
-// <<<<<<< Updated upstream
-// =======
 //       console.log(result);
-// >>>>>>> Stashed changes
 //       return result;
 //     } catch (err) {
 //       console.error('Read error:', err);
@@ -66,15 +60,12 @@
 //     }
 //   }
 
-// <<<<<<< Updated upstream
 //   public async update(
 //     collection: string,
 //     doc: any,
 //     tochange: any,
 //   ): Promise<any> {
-// =======
 //   public async update(collection: string, doc: any, tochange): Promise<any> {
-// >>>>>>> Stashed changes
 //     await this.ensureConnected();
 //     if (!this.db || !this.db.db) {
 //       throw new Error('MongoDB not connected');

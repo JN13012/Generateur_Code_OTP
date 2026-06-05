@@ -5,5 +5,5 @@ export class GenerateOtpDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({ example: '33788294303' })
-  phone: string;
+  phone!: string;
 }

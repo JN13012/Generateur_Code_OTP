@@ -19,6 +19,15 @@ export class Otp {
   @Prop({ required: true })
   otpCode!: string;
 
+  @Prop({ type: Date })
+  lastSentAt?: Date;
+
+  @Prop({ type: Date })
+  hourWindowStart?: Date;
+
+  @Prop({ default: 0 })
+  requestCountHour!: number;
+
   @Prop({ default: 0 })
   attempts!: number;
 

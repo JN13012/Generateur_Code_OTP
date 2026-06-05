@@ -16,10 +16,24 @@ export class OtpRepository {
     return this.otpModel.create(createOtpDto);
   }
 
-  async uptdateOneOrCreate(phone: string, codeHash: string, expiresAt: Date) {
+  async uptdateOneOrCreate(
+    phone: string,
+    otpCodeHash: string,
+    expiresAt: Date,
+    lastSentAt: Date,
+    hourWindowStart: Date,
+    requestCountHour: number,
+  ) {
     return this.otpModel.findOneAndUpdate(
       { phone },
-      { codeHash, attempts: 0, expiresAt },
+      {
+        otpCode: otpCodeHash,
+        attempts: 0,
+        expiresAt,
+        lastSentAt,
+        hourWindowStart,
+        requestCountHour,
+      },
       { upsert: true, returnDocument: 'after' },
     );
   }
@@ -37,7 +51,7 @@ export class OtpRepository {
   }
 
   async incrementAttempt(otpId: Types.ObjectId) {
-    this.otpModel
+    return this.otpModel
       .findByIdAndUpdate(
         otpId,
         { $inc: { attempts: 1 } },

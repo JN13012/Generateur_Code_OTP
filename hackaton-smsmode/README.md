@@ -1,219 +1,167 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Hackaton smsmode - Generateur OTP RCS
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend NestJS permettant de generer et verifier des codes OTP envoyes via l'API RCS smsmode.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Le projet utilise MongoDB pour stocker l'etat d'une demande OTP par numero de telephone, avec une limitation du nombre de generations par telephone.
 
-## Description
+## Stack
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- NestJS
+- TypeScript
+- MongoDB avec Mongoose
+- smsmode RCS API
+- Docker Compose
+- Swagger sur `/api`
 
-## Project setup
+## Installation
 
 ```bash
-$ npm install
+npm install
 ```
 
-Create a `.env` file from `.env.example` and set `PORT`, `MONGODB_URI`, `NGROK_AUTHTOKEN`, `NGROK_TARGET_HOST` and `NGROK_TARGET_PORT` before running the app.
+Copier le fichier d'exemple puis renseigner les valeurs:
 
-If your ngrok credential does not allow random TCP bindings, also set `NGROK_REMOTE_ADDR` to a reserved TCP address from your ngrok dashboard.
+```bash
+cp .env.example .env
+```
 
-If you want ngrok to expose an already existing database, set `NGROK_TARGET_HOST` and `NGROK_TARGET_PORT` to the machine and port where that database already listens. The `ngrok` service will create a TCP tunnel and print the public address in its logs.
+Variables attendues:
+
+```env
+PORT=3000
+MONGODB_URI=mongodb://mongo:27017/smsMode
+OTP_TTL_SECONDS=300
+MAX_ATTEMPTS=3
+SMSMODE_API_URL=https://rest.smsmode.com/rcs/v1/messages
+SMSMODE_SENDER_ID=<sender-id>
+SMSMODE_API_KEY=<smsmode-api-key>
+NGROK_AUTHTOKEN=<your_ngrok_auth_token>
+NGROK_REMOTE_ADDR=
+NGROK_TARGET_HOST=host.docker.internal
+NGROK_TARGET_PORT=27017
+```
+
+## Lancer le projet
+
+En local:
+
+```bash
+npm run start:dev
+```
+
+Avec Docker Compose:
 
 ```bash
 docker compose up
 ```
 
-## Compile and run the project
+Commandes utiles:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run build
+npm run test
+npm run test:e2e
 ```
 
-## Run tests
+## API
 
-```bash
-# unit tests
-$ npm run test
+### `POST /otp/generate`
 
-# e2e tests
-$ npm run test:e2e
+Genere un code OTP a 6 chiffres et l'envoie par RCS au numero fourni.
 
-# test coverage
-$ npm run test:cov
+Body:
+
+```json
+{
+  "phone": "33*********"
+}
 ```
 
-## Deployment
+Comportement:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+- genere un OTP avec `crypto.randomInt(100000, 1000000)`;
+- stocke le hash SHA-256 de l'OTP;
+- calcule une expiration avec `OTP_TTL_SECONDS`;
+- applique une limitation par telephone;
+- enregistre l'OTP et les compteurs en base;
+- envoie le message via smsmode.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### `POST /otp/verify`
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+Verifie le code OTP fourni pour un numero.
+
+Body:
+
+```json
+{
+  "phone": "33*********",
+  "code": "123456"
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Comportement:
 
----
+- recherche l'OTP associe au numero;
+- refuse et supprime un OTP expire;
+- bloque apres `MAX_ATTEMPTS` echecs;
+- incremente le compteur d'echecs si le code est incorrect;
+- supprime l'OTP si la verification reussit.
 
-## Architecture Sécurisée
+### Endpoints de debug
 
-### Menaces prises en compte
+- `GET /otp`: liste les OTP stockes.
+- `DELETE /otp`: supprime les OTP stockes.
 
-* Brute force                    => Rate limiting
-* Rejeu                          => Invalidation immédiate de l'OTP après validation (`used = true`)
-* Expiration d'OTP               => Vérification du TTL (`expiresAt`) côté serveur
-* Spam de génération d'OTP       => Rate limiting par IP et par numéro de téléphone
-* IDOR                           => hash des objets, Vérification conjointe de `requestId` et `phone`
-* Injection NoSQL                => Validation stricte des entrées et schémas Mongoose
-* Injection XSS                  => Échappement des données utilisateur avant affichage
-* Compromission de la base       => Stockage du hash OTP uniquement
-* Prédiction d'OTP               => Génération via `crypto.randomInt()`
-* Fuite de clé API               => Stockage des secrets dans des variables d'environnement (`.env`)
-* Entrées malformées             => Validation stricte des formats (`phone`, `OTP`, `UUID`)
-* Fuite d'informations           => Messages d'erreur génériques
-* Contournement du frontend      => Toutes les validations sont refaites côté backend
+Ces routes sont utiles pendant le hackathon, mais doivent etre protegees ou supprimees avant une mise en production.
 
+## Securite
 
-### Politique de rate limiting et de blocage
+Cette section decrit l'etat reel du projet. Certaines protections importantes ont ete identifiees, mais toutes n'ont pas ete implementees pendant le hackathon.
 
-#### `/otp/generate`
+### Protections implementees
 
-Afin de limiter le spam et l'abus de l'API RCS :
+- Generation de l'OTP avec `crypto.randomInt`, plus adapte que `otplib`.
+- Stockage du hash SHA-256 de l'OTP, pas du code en clair.
+- OTP transmis dans le body des requetes, pas dans l'URL.
+- Secrets smsmode charges depuis les variables d'environnement.
+- Expiration logique via le champ `expiresAt`.
+- Limitation de generation par numero:
+  - pas de nouveau code si un OTP non expire existe deja;
+  - au moins 60 secondes entre deux generations pour le meme numero;
+  - maximum 5 generations par heure pour le meme numero.
+- Limitation de generation par IP:
+  - maximum 20 demandes par heure pour une meme IP;
+  - blocage temporaire de 15 minutes en cas de depassement.
+- Limitation des tentatives de verification avec `MAX_ATTEMPTS`.
+- Suppression de l'OTP apres verification reussie.
+- Anti-rejeu basique: l'OTP est supprime de la base apres une verification reussie.
+- DTOs avec validation basique sur les champs `phone` et `code`.
 
-* maximum `1` génération d'OTP par minute pour un même numéro ;
-* maximum `5` générations d'OTP par heure pour un même numéro ;
-* maximum `20` générations d'OTP par heure pour une même adresse IP ;
-* blocage temporaire de `15 minutes` en cas de dépassement.
+### Limites connues
 
-#### `/otp/verify`
+- Il n'y a pas encore d'index TTL MongoDB pour supprimer automatiquement les OTP expires.
+- Le rate limit est base sur le document MongoDB du numero, pas sur Redis ni sur une solution distribuee.
+- Il n'y a pas de detection VPN/proxy/TOR.
+- Il n'y a pas de CAPTCHA ni de pre-verification email.
+- Il n'y a pas encore d'allowlist geographique des pays.
+- Les messages d'erreur restent parfois explicites, ce qui peut aider au debug mais n'est pas ideal en production.
+- Helmet, CORS restrictif et controle strict du `Content-Type` ne sont pas encore configures globalement.
 
-Afin de limiter les attaques par brute force :
+### Ameliorations recommandees
 
-* maximum `3` tentatives de vérification par OTP ;
-* après `3` échecs, l'OTP est invalidé ;
-* maximum `10` tentatives de vérification par heure pour un même numéro ;
-* maximum `10` tentatives de vérification par heure pour une même adresse IP ;
-* blocage temporaire de `30 minutes` après dépassement des seuils.
+- Ajouter un index TTL sur `expiresAt`.
+- Ajouter un rate limit par prefixe de numero.
+- Masquer ou uniformiser les messages d'erreur.
+- Proteger ou supprimer les endpoints de debug.
+- Ajouter Helmet et une configuration CORS stricte.
+- Ajouter des tests unitaires sur les cas de securite: rate limit, expiration, mauvais code, nombre maximal de tentatives.
 
-#### Blocage temporaire
+## Notes de developpement
 
-Un système de blocage temporaire est appliqué en cas de comportement abusif :
+Swagger est disponible sur:
 
-* spam de génération d'OTP ;
-* trop grand nombre d'échecs de vérification ;
-* requêtes malformées répétées ;
-* incohérences répétées entre `requestId` et `phone`.
+```text
+http://localhost:3000/api
+```
 
-Le blocage reste temporaire afin d'éviter qu'un attaquant puisse provoquer un déni de service sur un utilisateur légitime.
-
-
-### Sécurité HTTP
-
-* Aucun OTP n'est transmis dans l'URL ou les paramètres de requête.
-* Les données sensibles sont transmises uniquement dans le corps (`body`) des requêtes HTTP.
-* Vérification du header `Content-Type: application/json`.
-* Configuration CORS restrictive.
-* Ajout de headers de sécurité via Helmet.
-* Utilisation de HTTPS en environnement de production.
-
-### Journalisation et détection d'abus
-
-Les événements suspects sont journalisés sans enregistrer de données sensibles :
-
-* nombre anormal de requêtes ;
-* erreurs répétées ;
-* tentatives sur des `requestId` inexistants ;
-* tentatives de réutilisation d'un OTP ;
-* dépassement des seuils de rate limiting.
-
-Les éléments suivants ne sont jamais enregistrés dans les logs :
-
-* OTP en clair ;
-* hash OTP ;
-* clé API smsmode ;
-* secrets applicatifs.
-
-### Sécurité de `/otp/generate`
-
-L'endpoint `/otp/generate` applique les contrôles suivants :
-
-* validation du numéro de téléphone côté serveur ;
-* application de la politique de rate limiting ;
-* génération de l'OTP via `crypto.randomInt()` ;
-* stockage du hash OTP uniquement ;
-* aucun retour de l'OTP dans la réponse API ;
-* utilisation de la clé API smsmode exclusivement côté backend.
-
-
-### Sécurité de `/otp/verify`
-
-L'endpoint `/otp/verify` applique les contrôles suivants :
-
-* validation du format du numéro de téléphone ;
-* validation du format de l'OTP ;
-* validation du format du `requestId` ;
-* vérification de l'existence de la demande OTP ;
-* vérification de la correspondance entre `requestId` et `phone` ;
-* vérification de l'expiration (`expiresAt`) ;
-* vérification que l'OTP n'a pas déjà été utilisé ;
-* vérification du nombre maximal de tentatives autorisées ;
-* comparaison entre l'OTP fourni et le hash stocké ;
-* incrémentation du compteur de tentatives en cas d'échec ;
-* invalidation immédiate de l'OTP après validation ;
-* réponses d'erreur génériques afin d'éviter les fuites d'information.
-
----
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Le projet est encore en phase hackathon. La priorite a ete de livrer un flux OTP fonctionnel avec quelques protections cote serveur, tout en gardant une liste claire des limites de securite restantes.

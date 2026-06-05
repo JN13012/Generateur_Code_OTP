@@ -14,9 +14,17 @@ export class OtpService {
     private readonly otpRepository: OtpRepository,
   ) {}
 
-  async generateOtp(generateOtpDto: GenerateOtpDto) {
-    // const targetPhone = phone || '33788294303';
+  async getAll() {
+    const res = await this.otpRepository.findAll();
+    console.log(res);
+    return res;
+  }
 
+  async deleteAll() {
+    return this.otpRepository.deleteAll();
+  }
+
+  async generateOtp(generateOtpDto: GenerateOtpDto) {
     const token = crypto.randomInt(100000, 999999).toString();
 
     const codeHash = crypto.createHash('sha256').update(token).digest('hex');
@@ -24,18 +32,18 @@ export class OtpService {
       Date.now() + this.configService.get('OTP_TTL_SECONDS') * 1000,
     );
 
-    await this.otpRepository.uptdateOneOrCreate(
-      generateOtpDto.phone,
-      codeHash,
-      expiresAt,
-    );
+    await this.otpRepository.upsertOne({
+      phone: generateOtpDto.phone,
+      otpCode: codeHash,
+      expiresAt: expiresAt,
+    });
 
     return this.sendRcsMsg(generateOtpDto.phone, token);
-    // return { message: 'OTP generated and sent successfully via RCS' };
   }
 
   async verifyOtp(verifyOtpDto: VerifyOtpDto): Promise<{ success: boolean }> {
     const otpRecord = await this.otpRepository.findOne(verifyOtpDto.phone);
+    console.log(otpRecord);
 
     if (!otpRecord) throw new BadRequestException('Expired or Invalid OTP');
 
@@ -59,7 +67,10 @@ export class OtpService {
     return { success: true };
   }
 
-  private async sendRcsMsg(phone: string, token: string) {
+  private async sendRcsMsg(
+    phone: string,
+    token: string,
+  ): Promise<{ isSent: boolean }> {
     try {
       const url = this.configService.get('SMSMODE_API_URL');
 
@@ -84,19 +95,24 @@ export class OtpService {
       });
 
       console.log(`[RCS] Message envoyé avec succès à ${phone}`);
-      console.log(response);
-      return response;
+      console.log('data: ', response.data);
+
+      return {
+        isSent: response.data.status.detail === 'ACCEPTED',
+      };
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         console.error(
           "[RCS Error] Détails de l'API smsmode :",
           JSON.stringify(error.response.data, null, 2),
         );
+        return { isSent: false };
       } else {
         console.error(
           '[RCS Error] Erreur réseau ou de configuration :',
           error.message,
         );
+        return { isSent: false };
       }
     }
   }

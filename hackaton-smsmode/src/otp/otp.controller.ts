@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { OtpService } from './otp.service';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
@@ -18,5 +18,15 @@ export class OtpController {
   @ApiOperation({ summary: 'Verify user authentification.' })
   verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
     return this.otpService.verifyOtp(verifyOtpDto);
+  }
+
+  @Get()
+  getAllOtp() {
+    return this.otpService.getAll();
+  }
+
+  @Delete()
+  deleteAll() {
+    return this.otpService.deleteAll();
   }
 }

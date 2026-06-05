@@ -15,11 +15,8 @@ export class CreateOtpDto {
   @IsString()
   @IsNotEmpty()
   @Length(6, 6, { message: 'code must be 6 ints' })
-  @ApiProperty({ example: '123456' })
+  @ApiProperty({ example: '306201' })
   otpCode: string;
-
-  @IsString()
-  requestId: string;
 
   @IsDate()
   expiresAt: Date;

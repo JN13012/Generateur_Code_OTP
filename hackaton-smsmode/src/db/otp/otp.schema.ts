@@ -13,14 +13,11 @@ export enum OtpStatus {
 
 @Schema({ timestamps: true, collection: 'otp' })
 export class Otp {
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   phone!: string;
 
   @Prop({ required: true })
   otpCode!: string;
-
-  @Prop({ required: true })
-  requestId!: string;
 
   @Prop({ default: 0 })
   attempts!: number;

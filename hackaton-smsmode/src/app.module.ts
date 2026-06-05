@@ -3,8 +3,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { validateEnv } from './_utils/config/env.config';
 import { OtpModule } from './db/otp/otp.module';
+import { validateEnv } from './_utils/config/env.config';
 
 @Module({
   imports: [

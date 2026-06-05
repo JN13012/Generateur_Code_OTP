@@ -22,8 +22,8 @@ export class Otp {
   @Prop({ required: true })
   requestId!: string;
 
-  @Prop({ required: true })
-  phone!: string;
+  @Prop({ default: 0 })
+  attempts!: number;
 
   @Prop({ required: true })
   expiresAt!: Date;

@@ -82,7 +82,7 @@ Comportement:
 - genere un OTP avec `crypto.randomInt(100000, 1000000)`;
 - stocke le hash SHA-256 de l'OTP;
 - calcule une expiration avec `OTP_TTL_SECONDS`;
-- applique une limitation par telephone;
+- applique une limitation par telephone et ip;
 - enregistre l'OTP et les compteurs en base;
 - envoie le message via smsmode.
 
@@ -150,7 +150,7 @@ Cette section decrit l'etat reel du projet. Certaines protections importantes on
 ### Ameliorations recommandees
 
 - Ajouter un index TTL sur `expiresAt`.
-- Ajouter un rate limit par prefixe de numero.
+- Ajouter un rate limit par numero ressemblants.
 - Masquer ou uniformiser les messages d'erreur.
 - Proteger ou supprimer les endpoints de debug.
 - Ajouter Helmet et une configuration CORS stricte.

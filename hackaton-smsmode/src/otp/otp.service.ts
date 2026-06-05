@@ -25,7 +25,9 @@ export class OtpService {
   }
 
   async generateLimiting(generateOtpDto: GenerateOtpDto, ip: string) {
-    const otpRecord = await this.otpRepository.findOne(generateOtpDto.phone);
+    const phone = generateOtpDto.phone.trim();
+    const normalizedGenerateOtpDto = { ...generateOtpDto, phone };
+    const otpRecord = await this.otpRepository.findOne(phone);
     const now = new Date();
 
     let hourWindowStart = otpRecord?.hourWindowStart
@@ -34,17 +36,9 @@ export class OtpService {
     let requestCountHour = otpRecord?.requestCountHour ?? 0;
 
     if (otpRecord && otpRecord.expiresAt > now) {
-      throw new BadRequestException('Code already sent.');
-    }
-
-    if (otpRecord?.lastSentAt) {
-      const secondsSinceLast =
-        (now.getTime() - otpRecord.lastSentAt.getTime()) / 1000;
-      if (secondsSinceLast < 60) {
-        throw new BadRequestException(
-          'Code already sent less than 1 minute ago.',
-        );
-      }
+      throw new BadRequestException(
+        `Can't send another code while already one is active. Wait 3 minutes for send new code.`,
+      );
     }
 
     if (now.getTime() - hourWindowStart.getTime() < 3600_000) {
@@ -60,7 +54,7 @@ export class OtpService {
     await this.assertIpRateLimit(ip, now);
 
     return this.generateOtp(
-      generateOtpDto,
+      normalizedGenerateOtpDto,
       now,
       hourWindowStart,
       requestCountHour,
@@ -126,34 +120,33 @@ export class OtpService {
   }
 
   async verifyOtp(verifyOtpDto: VerifyOtpDto): Promise<{ success: boolean }> {
-    const otpRecord = await this.otpRepository.findOne(verifyOtpDto.phone);
+    const phone = verifyOtpDto.phone.trim();
+    const code = verifyOtpDto.code.trim();
+    const otpRecord = await this.otpRepository.findOne(phone);
 
     if (!otpRecord) {
       throw new BadRequestException('Expired or Invalid OTP');
     }
 
     if (otpRecord.expiresAt <= new Date()) {
-      await this.otpRepository.deleteOne(verifyOtpDto.phone);
+      await this.otpRepository.deleteOne(phone);
       throw new BadRequestException('Expired or Invalid OTP');
     }
 
     const maxAttempts = this.configService.get('MAX_ATTEMPTS');
 
     if (otpRecord.attempts >= maxAttempts) {
-      await this.otpRepository.deleteOne(verifyOtpDto.phone);
+      await this.otpRepository.deleteOne(phone);
       throw new BadRequestException(
         'Too many failed attempts. Please request a new code.',
       );
     }
 
-    const inputHash = crypto
-      .createHash('sha256')
-      .update(verifyOtpDto.code)
-      .digest('hex');
+    const inputHash = crypto.createHash('sha256').update(code).digest('hex');
 
     if (otpRecord.otpCode !== inputHash) {
       if (otpRecord.attempts + 1 >= maxAttempts) {
-        await this.otpRepository.deleteOne(verifyOtpDto.phone);
+        await this.otpRepository.deleteOne(phone);
         throw new BadRequestException(
           'Too many failed attempts. Please request a new code.',
         );
@@ -181,7 +174,7 @@ export class OtpService {
           orientation: 'HORIZONTAL',
           content: {
             title: 'Validation de votre compte',
-            description: `Voici votre code de vérification unique : \n\n👉  ${token}  👈\n\nCe code est confidentiel et expire dans 15 minutes.`,
+            description: `Voici votre code de vérification unique : \n\n👉  ${token}  👈\n\nCe code est confidentiel et expire dans 3 minutes.`,
           },
         },
       };

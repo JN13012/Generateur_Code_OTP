@@ -1,6 +1,8 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { OtpService } from './otp.service';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { GenerateOtpDto } from './dto/generate-otp.dto';
 
 @Controller('otp')
 export class OtpController {
@@ -8,11 +10,13 @@ export class OtpController {
 
   @Post('/generate')
   @ApiOperation({ summary: 'Generate otp code for user authentification.' })
-  generateOtp(@Body('phone') phone: string) {
-    return this.otpService.generateOtp(phone);
+  generateOtp(@Body() generateOtpDto: GenerateOtpDto) {
+    return this.otpService.generateOtp(generateOtpDto);
   }
 
   @Post('/verify')
   @ApiOperation({ summary: 'Verify user authentification.' })
-  verifyOtp() {}
+  verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
+    return this.otpService.verifyOtp(verifyOtpDto);
+  }
 }

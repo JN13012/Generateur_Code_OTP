@@ -127,7 +127,6 @@ Cette section decrit l'etat reel du projet. Certaines protections importantes on
 - Expiration logique via le champ `expiresAt`.
 - Limitation de generation par numero:
   - pas de nouveau code si un OTP non expire existe deja;
-  - au moins 60 secondes entre deux generations pour le meme numero;
   - maximum 5 generations par heure pour le meme numero.
 - Limitation de generation par IP:
   - maximum 20 demandes par heure pour une meme IP;
@@ -145,7 +144,6 @@ Cette section decrit l'etat reel du projet. Certaines protections importantes on
 - Il n'y a pas de CAPTCHA ni de pre-verification email.
 - Il n'y a pas encore d'allowlist geographique des pays.
 - Les messages d'erreur restent parfois explicites, ce qui peut aider au debug mais n'est pas ideal en production.
-- Helmet, CORS restrictif et controle strict du `Content-Type` ne sont pas encore configures globalement.
 
 ### Ameliorations recommandees
 
@@ -153,7 +151,7 @@ Cette section decrit l'etat reel du projet. Certaines protections importantes on
 - Ajouter un rate limit par numero ressemblants.
 - Masquer ou uniformiser les messages d'erreur.
 - Proteger ou supprimer les endpoints de debug.
-- Ajouter Helmet et une configuration CORS stricte.
+- Ajouter une configuration CORS stricte.
 - Ajouter des tests unitaires sur les cas de securite: rate limit, expiration, mauvais code, nombre maximal de tentatives.
 
 ## Notes de developpement

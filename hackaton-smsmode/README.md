@@ -151,7 +151,6 @@ Cette section decrit l'etat reel du projet. Certaines protections importantes on
 - Ajouter un rate limit par numero ressemblants.
 - Masquer ou uniformiser les messages d'erreur.
 - Proteger ou supprimer les endpoints de debug.
-- Ajouter une configuration CORS stricte.
 - Ajouter des tests unitaires sur les cas de securite: rate limit, expiration, mauvais code, nombre maximal de tentatives.
 
 ## Notes de developpement

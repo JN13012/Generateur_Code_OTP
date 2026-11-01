@@ -4,7 +4,7 @@ import { IsNotEmpty, IsString, Length, Matches } from 'class-validator';
 export class VerifyOtpDto {
   @IsString()
   @IsNotEmpty()
-  @ApiProperty({ example: '33788294303' })
+  @ApiProperty({ example: '33600000000' })
   phone!: string;
 
   @IsString()
